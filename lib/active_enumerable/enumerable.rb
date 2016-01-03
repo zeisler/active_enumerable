@@ -3,9 +3,7 @@ module ActiveEnumerable
     include ::Enumerable
 
     def each(*args, &block)
-      to_a.send(:each, *args, &block)
+      @to_a.send(:each, *args, &block)
     end
-
-    attr_reader :to_a
   end
 end

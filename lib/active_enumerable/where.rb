@@ -39,23 +39,7 @@ module ActiveEnumerable
     #
     #    <#ActiveEnumerable>.where({ created_at: (Time.now.midnight - 1.day)..Time.now.midnight })
     #
-    # In the case of a belongs_to relationship, an association key can be used
-    # to specify the model if an ActiveRecord object is used as the value.
-    #
-    #    author = <#ActiveEnumerable>.find(1)
-    #
-    #    # The following queries will be equivalent:
-    #    <#ActiveEnumerable>.where(author: author)
-    #    <#ActiveEnumerable>.where(author_id: author)
-    #
-    # This also works with polymorphic belongs_to relationships:
-    #
-    #    treasure = <#ActiveEnumerable>.create(name: 'gold coins')
-    #    treasure.price_estimates << PriceEstimate.create(price: 125)
-    #
-    #    # The following queries will be equivalent:
-    #    <#ActiveEnumerable>.where(estimate_of: treasure)
-    #    <#ActiveEnumerable>.where(estimate_of_type: 'Treasure', estimate_of_id: treasure)
+    #    <#ActiveEnumerable>.where(contracts:[{ created_at: (Time.now.midnight - 1.day)..Time.now.midnight }])
     #
     # .or
     #
@@ -70,6 +54,7 @@ module ActiveEnumerable
     # Additional conditions can be passed to where in hash form.
     #
     #   <#ActiveEnumerable>.where(id: 1).or(author_id: 3)
+    #
     def where(conditions=nil)
       return WhereNotChain.new(all, method(:__new_relation__)) if conditions.nil?
       enable_or create_where_relation(conditions, to_a.select do |record|
