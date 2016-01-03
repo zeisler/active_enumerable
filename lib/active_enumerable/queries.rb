@@ -6,12 +6,12 @@ module ActiveEnumerable
     # If no record can be found for all of the listed ids, then RecordNotFound will be raised. If the primary key
     # is an integer, find by id coerces its arguments using +to_i+.
     #
-    #   Person.find(1)          # returns the object for ID = 1
-    #   Person.find(1, 2, 6)    # returns an array for objects with IDs in (1, 2, 6)
-    #   Person.find([7, 17])    # returns an array for objects with IDs in (7, 17)
-    #   Person.find([1])        # returns an array for the object with ID = 1
+    #   <#ActiveEnumerable>.find(1)          # returns the object for ID = 1
+    #   <#ActiveEnumerable>.find(1, 2, 6)    # returns an array for objects with IDs in (1, 2, 6)
+    #   <#ActiveEnumerable>.find([7, 17])    # returns an array for objects with IDs in (7, 17)
+    #   <#ActiveEnumerable>.find([1])        # returns an array for the object with ID = 1
     #
-    # <tt>ActiveMocker::RecordNotFound</tt> will be raised if one or more ids are not found.
+    # <tt>ActiveEnumerable::RecordNotFound</tt> will be raised if one or more ids are not found.
     def find(ids)
       raise RecordNotFound.new("Couldn't find #{self.name} without an ID") if ids.nil?
       results = [*ids].map do |id|
@@ -31,13 +31,13 @@ module ActiveEnumerable
     # ==== Examples
     #
     #   # Update all customers with the given attributes
-    #   Customer.update_all wants_email: true
+    #   <#ActiveEnumerable>.update_all wants_email: true
     #
     #   # Update all books with 'Rails' in their title
-    #   BookMock.where(title: 'Rails').update_all(author: 'David')
+    #   <#ActiveEnumerable>.where(title: 'Rails').update_all(author: 'David')
     #
     #   # Update all books that match conditions, but limit it to 5 ordered by date
-    #   BookMock.where(title: 'Rails').order(:created_at).limit(5).update_all(author: 'David')
+    #   <#ActiveEnumerable>.where(title: 'Rails').order(:created_at).limit(5).update_all(author: 'David')
     def update_all(attributes)
       all.each { |i| i.update(attributes) }
     end
@@ -52,11 +52,11 @@ module ActiveEnumerable
     # ==== Examples
     #
     #   # Updates one record
-    #   Person.update(15, user_name: 'Samuel', group: 'expert')
+    #   <#ActiveEnumerable>.update(15, user_name: 'Samuel', group: 'expert')
     #
     #   # Updates multiple records
     #   people = { 1 => { "first_name" => "David" }, 2 => { "first_name" => "Jeremy" } }
-    #   Person.update(people.keys, people.values)
+    #   <#ActiveEnumerable>.update(people.keys, people.values)
     def update(id, attributes)
       if id.is_a?(Array)
         id.map.with_index { |one_id, idx| update(one_id, attributes[idx]) }
@@ -73,15 +73,15 @@ module ActiveEnumerable
     #
     # If no record is found, returns <tt>nil</tt>.
     #
-    #   Post.find_by name: 'Spartacus', rating: 4
+    #   <#ActiveEnumerable>.find_by name: 'Spartacus', rating: 4
     def find_by(conditions = {})
       to_a.detect do |record|
-        Find.new(record).is_of(conditions)
+        Finder.new(record).is_of(conditions)
       end
     end
 
     # Like <tt>find_by</tt>, except that if no record is found, raises
-    # an <tt>ActiveRecord::RecordNotFound</tt> error.
+    # an <tt>ActiveEnumerable::RecordNotFound</tt> error.
     def find_by!(conditions={})
       result = find_by(conditions)
       if result.nil?
@@ -94,12 +94,12 @@ module ActiveEnumerable
     # with the attributes if one is not found:
     #
     #   # Find the first user named "Penélope" or create a new one.
-    #   UserMock.find_or_create_by(first_name: 'Penélope')
+    #   <#ActiveEnumerable>.find_or_create_by(first_name: 'Penélope')
     #   # => #<User id: 1, first_name: "Penélope", last_name: nil>
     #
     #   # Find the first user named "Penélope" or create a new one.
     #   # We already have one so the existing record will be returned.
-    #   UserMock.find_or_create_by(first_name: 'Penélope')
+    #   <#ActiveEnumerable>.find_or_create_by(first_name: 'Penélope')
     #   # => #<User id: 1, first_name: "Penélope", last_name: nil>
     #
     # This method accepts a block, which is passed down to +create+. The last example
@@ -107,7 +107,7 @@ module ActiveEnumerable
     #
     #   # Find the first user named "Scarlett" or create a new one with a
     #   # different last name.
-    #   User.find_or_create_by(first_name: 'Scarlett') do |user|
+    #   <#ActiveEnumerable>.find_or_create_by(first_name: 'Scarlett') do |user|
     #     user.last_name = 'Johansson'
     #   end
     #   # => #<User id: 2, first_name: "Scarlett", last_name: "Johansson">
@@ -125,29 +125,29 @@ module ActiveEnumerable
 
     # Count the records.
     #
-    #   PersonMock.count
+    #   <#ActiveEnumerable>.count
     #   # => the total count of all people
     #
-    #   PersonMock.count(:age)
-    #   # => returns the total count of all people whose age is present in database
-    def count(column_name = nil)
-      return all.size if column_name.nil?
-      where.not(column_name => nil).size
+    #   <#ActiveEnumerable>.count(:age)
+    #   # => returns the total count of all people whose age is not nil
+    def count(name = nil)
+      return all.size if name.nil?
+      where.not(name => nil).size
     end
 
     # Specifies a limit for the number of records to retrieve.
     #
-    #   User.limit(10)
+    #   <#ActiveEnumerable>.limit(10)
     def limit(num)
       relation = __new_relation__(all.take(num))
       relation.send(:set_from_limit)
       relation
     end
 
-    # Calculates the sum of values on a given column. The value is returned
-    # with the same data type of the column, 0 if there's no row.
+    # Calculates the sum of values on a given attribute. The value is returned
+    # with the same data type of the attribute, 0 if there's no row.
     #
-    #   Person.sum(:age) # => 4562
+    #   <#ActiveEnumerable>.sum(:age) # => 4562
     def sum(key)
       values = values_by_key(key)
       values.inject(0) do |sum, n|
@@ -155,50 +155,46 @@ module ActiveEnumerable
       end
     end
 
-    # Calculates the average value on a given column. Returns +nil+ if there's
+    # Calculates the average value on a given attribute. Returns +nil+ if there's
     # no row.
     #
-    #   PersonMock.average(:age) # => 35.8
+    #   <#ActiveEnumerable>.average(:age) # => 35.8
     def average(key)
       values = values_by_key(key)
       total  = values.inject { |sum, n| sum + n }
       BigDecimal.new(total) / BigDecimal.new(values.count)
     end
 
-    # Calculates the minimum value on a given column. The value is returned
-    # with the same data type of the column, or +nil+ if there's no row.
+    # Calculates the minimum value on a given attribute. The value is returned
+    # with the same data type of the attribute, or +nil+ if there's no row.
     #
-    #   Person.minimum(:age) # => 7
+    #   <#ActiveEnumerable>.minimum(:age) # => 7
     def minimum(key)
       values_by_key(key).min_by { |i| i }
     end
 
-    # Calculates the maximum value on a given column. The value is returned
-    # with the same data type of the column, or +nil+ if there's no row.
+    # Calculates the maximum value on a given attribute. The value is returned
+    # with the same data type of the attribute, or +nil+ if there's no row.
     #
-    #   Person.maximum(:age) # => 93
+    #   <#ActiveEnumerable>.maximum(:age) # => 93
     def maximum(key)
       values_by_key(key).max_by { |i| i }
     end
 
     # Allows to specify an order attribute:
     #
-    #   User.order('name')
+    #   <#ActiveEnumerable>.order('name')
     #
-    #   User.order(:name)
+    #   <#ActiveEnumerable>.order(:name)
     def order(key)
-      __new_relation__(all.sort_by { |item| item.send(key) })
+      __new_relation__(all.sort_by { |item| MethodCaller.new(item).call(key) })
     end
 
     # Reverse the existing order clause on the relation.
     #
-    #   User.order('name').reverse_order
+    #   <#ActiveEnumerable>.order('name').reverse_order
     def reverse_order
       __new_relation__(to_a.reverse)
-    end
-
-    def all
-      __new_relation__(to_a || [])
     end
 
     # Returns a chainable relation with zero records.
@@ -217,11 +213,11 @@ module ActiveEnumerable
     #   def visible_posts
     #     case role
     #     when 'Country Manager'
-    #       Post.where(country: country)
+    #       <#ActiveEnumerable>.where(country: country)
     #     when 'Reviewer'
-    #       Post.published
+    #       <#ActiveEnumerable>.published
     #     when 'Bad User'
-    #       Post.none # It can't be chained if [] is returned.
+    #       <#ActiveEnumerable>.none # It can't be chained if [] is returned.
     #     end
     #   end
     #
@@ -234,10 +230,5 @@ module ActiveEnumerable
     def values_by_key(key)
       all.map { |obj| obj.send(key) }
     end
-
-    def __new_relation__(collection)
-      self.class.new(collection)
-    end
-
   end
 end

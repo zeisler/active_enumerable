@@ -42,8 +42,14 @@ RSpec.describe ActiveEnumerable do
       expect(TestEnumerable.new(item_hashes).where.not(name: "Fred")).to eq TestEnumerable.new([item_hashes[1],item_hashes[2]])
     end
 
-    it "where or" do
+    it "where or conditions" do
       expect(TestEnumerable.new(item_hashes).where(name: "Dave").or(name: "Fred").where.not(name: "Sam")).
+        to eq TestEnumerable.new([item_hashes[2],item_hashes[0]])
+    end
+
+    it "where or relation" do
+      te = TestEnumerable.new(item_hashes)
+      expect(te.where(name: "Dave").or(te.where(name: "Fred")).where.not(name: "Sam")).
         to eq TestEnumerable.new([item_hashes[2],item_hashes[0]])
     end
   end
