@@ -19,15 +19,21 @@ module ActiveEnumerable
     def create_scope_method(meth)
       if (scope = self.class.__scoped_methods__.find { |a| a.first == meth })
         self.define_singleton_method(scope.first) do
-          thing = instance_exec(&scope.last)
-          if thing.is_a? Array
-            self.class.new(thing)
-          else
-            thing
-          end
+          scope(&scope.last)
         end
       end
     end
+
+    def scope(&block)
+      result = instance_exec(&block)
+      if result.is_a? Array
+        __new_relation__(result)
+      else
+        result
+      end
+    end
+
+    private :create_scope_method
 
     module ClassMethods
       def scope(name, block)
@@ -37,6 +43,10 @@ module ActiveEnumerable
       def __scoped_methods__
         @__scoped_methods__ ||= []
       end
+    end
+
+    def self.included(base)
+      base.extend(ClassMethods)
     end
   end
 end
