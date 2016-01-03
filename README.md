@@ -22,7 +22,33 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+require "active_enumerable"
+
+class Customers
+  include ActiveEnumerable
+  
+  scope :unpaid, -> { where(paid: false).or(credit: 0) }
+end
+
+customers = Customers.new([{paid: true, credit: 1000}, {paid: false, credit: 2000}, {paid: false, credit: 0}])
+
+customers.unpaid
+  # => <#Customers [{paid: false, credit: 2000}]>
+  
+customers.scope { select { |y| y > 1000 } }
+  #=> <#Customers [{paid: true, credit: 1000}, {paid: false, credit: 2000}]>
+  
+customers.sum(:credit)
+  #=> 3000
+  
+customers.create({paid: true, credit: 1500}) # defaults to Hash creations
+
+Customers.item_class = Customer
+
+customers.create({paid: true, credit: 1500}).to_a.last
+  #=> <#Customer paid: true, credit: 1500>
+```
 
 ## Development
 
@@ -32,7 +58,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/active_enumerable. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/zeisler/active_enumerable. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
 
 
 ## License
