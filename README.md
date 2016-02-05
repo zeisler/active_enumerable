@@ -1,5 +1,7 @@
 # ActiveEnumerable
 
+[![Build Status](https://travis-ci.org/zeisler/active_enumerable.svg?branch=master)](https://travis-ci.org/zeisler/active_enumerable)
+
 Include ActiveRecord like query methods to Ruby enumerable collections.
 
 ## Installation
