@@ -32,7 +32,7 @@ end
 customers = Customers.new([{paid: true, credit: 1000}, {paid: false, credit: 2000}, {paid: false, credit: 0}])
 
 customers.unpaid
-  # => <#Customers [{paid: false, credit: 2000}]>
+  # => <#Customers [{:paid=>false, :credit=>2000}, {:paid=>false, :credit=>0}]]>
   
 customers.scope { select { |y| y > 1000 } }
   #=> <#Customers [{paid: true, credit: 1000}, {paid: false, credit: 2000}]>

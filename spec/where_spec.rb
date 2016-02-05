@@ -25,9 +25,18 @@ RSpec.describe ActiveEnumerable::Where do
       expect(TestEnumerable.new(item_hashes).where.not(name: "Fred").to_a).to eq [item_hashes[1], item_hashes[2]]
     end
 
-    it "#or(conditions)" do
-      expect(TestEnumerable.new(item_hashes).where(name: "Dave").or(name: "Fred").where.not(name: "Sam").to_a).
-        to eq [item_hashes[2], item_hashes[0]]
+    context "#or(conditions)" do
+      it "returns a uniq collection" do
+        test_enum = TestEnumerable.new([{ paid: true, credit: 1000 }, { paid: false, credit: 2000 }, { paid: false, credit: 0 }])
+        result    = test_enum.where(paid: false).or(credit: 0)
+        expect(result.to_a).
+          to eq [{ :paid => false, :credit => 2000 }, { :paid => false, :credit => 0 }]
+      end
+
+      it "with a where.not" do
+        expect(TestEnumerable.new(item_hashes).where(name: "Dave").or(name: "Fred").where.not(name: "Sam").to_a).
+          to eq [item_hashes[2], item_hashes[0]]
+      end
     end
 
     it "#or(<#ActiveEnumerable>)" do

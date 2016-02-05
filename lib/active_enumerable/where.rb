@@ -67,7 +67,7 @@ module ActiveEnumerable
       relation.define_singleton_method(:or) do |conditions_or_relation|
         conditions = get_conditions(conditions_or_relation)
         or_result = create_where_relation(where_conditions, pre_where_to_a).where(conditions)
-        create_where_relation(or_result.where_conditions, relation.to_a.concat(or_result.to_a))
+        create_where_relation(or_result.where_conditions, relation.to_a.concat(or_result.to_a).uniq)
       end
       relation
     end
