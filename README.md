@@ -22,6 +22,8 @@ Or install it yourself as:
 
 ## Usage
 
+### ActiveRecord Like Querying
+
 ```ruby
 require "active_enumerable"
 
@@ -48,9 +50,12 @@ Customers.item_class = Customer
 
 customers.create({paid: true, credit: 1500}).to_a.last
   #=> <#Customer paid: true, credit: 1500>
-  
-English Like DSL
+ 
+```
 
+### English Like DSL
+
+```ruby
 class People
   include ActiveEnumerable
   
