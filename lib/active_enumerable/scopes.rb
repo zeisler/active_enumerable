@@ -1,5 +1,6 @@
 module ActiveEnumerable
   module Scopes
+    include ScopeMethod
     def method_missing(meth, *args, &block)
       if create_scope_method(meth)
         send(meth, *args, &block)
@@ -21,15 +22,6 @@ module ActiveEnumerable
         self.define_singleton_method(scope.first) do
           scope(&scope.last)
         end
-      end
-    end
-
-    def scope(&block)
-      result = instance_exec(&block)
-      if result.is_a? Array
-        __new_relation__(result)
-      else
-        result
       end
     end
 

@@ -1,10 +1,16 @@
 module ActiveEnumerable
   module Base
     def initialize(collection=[])
-      @to_a = collection.to_ary
+      if collection.is_a? ::Enumerator::Lazy
+        @collection = collection
+      else
+        @collection = collection.to_a
+      end
     end
 
-    attr_reader :to_a
+    def to_a
+      @collection.to_a
+    end
 
     # @private
     def __new_relation__(collection)
@@ -20,11 +26,15 @@ module ActiveEnumerable
     end
 
     def add(item)
-      to_a << item
+      @collection << item
     end
 
     def all
-      self
+      self.tap { to_a }
+    end
+
+    def name
+      self.class.name
     end
 
     module ClassMethods

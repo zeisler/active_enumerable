@@ -1,16 +1,49 @@
 module ActiveEnumerable
-  # @private
+
   class Finder
     def initialize(record)
       @method_caller = MethodCaller.new(record)
     end
 
+    # Regex conditions
+    #   Finder.new({ name: "Timmy" }).is_of({ name: /Tim/ })
+    #     #=> true
+    #
+    # Hash conditions
+    #   record = { name: "Timmy", parents: [{ name: "Dad", age: 33 }, { name: "Mom", age: 29 }] } }
+    #
+    #   Matching array of partial hashes identities
+    #     Finder.new(record).is_of(parents: [{ name: "Dad" }, { name: "Mom" }]))
+    #       #=> true
+    #
+    #   Matching partial hashes identities to an array of hashes
+    #     Finder.new(record).is_of(parents: { name: "Dad", age: 33 })
+    #       #=> true
+    #
+    # Array conditions
+    #   record = { name: "Timmy" }
+    #
+    #   Finder.new(record).is_of(name: %w(Timmy Fred))
+    #     #=> true
+    #   Finder.new(record).is_of(name: ["Sammy", /Tim/])
+    #     #=> true
+    #
+    # Value conditions
+    #   record = { name: "Timmy", age: 10 }
+    #
+    #   Finder.new(record).is_of(name: "Timmy")
+    #     #=> true
+    #   Finder.new(record).is_of(age: 10)
+    #     #=> true
+    #
+    # @param [Hash] conditions
+    # @return [true, false]
     def is_of(conditions={})
       conditions.all? do |col, match|
         if match.is_a? Hash
           hash_match(col, match)
-        elsif match.is_a? ::Enumerable
-          any_match(col, match)
+        elsif match.is_a? Array
+          array_match(col, match)
         else
           compare(col, match)
         end
@@ -28,12 +61,24 @@ module ActiveEnumerable
       end
     end
 
-    def any_match(col, match)
-      match.any? { |m| compare(col, m) }
+    def array_match(col, match)
+      if @method_caller.call(col).is_a? Array
+        if !(r = compare(col, match)) && match.map(&:class).uniq == [Hash]
+          match.all? { |m| hash_match(col, m) }
+        else
+          r
+        end
+      else
+        match.any? { |m| compare(col, m) }
+      end
     end
 
     def compare(col, match)
-      @method_caller.call(col) == match
+      @method_caller.call(col).public_send(compare_by(match), match)
+    end
+
+    def compare_by(match)
+      (match.is_a? Regexp) ? :=~ : :==
     end
   end
 end

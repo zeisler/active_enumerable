@@ -48,6 +48,30 @@ Customers.item_class = Customer
 
 customers.create({paid: true, credit: 1500}).to_a.last
   #=> <#Customer paid: true, credit: 1500>
+  
+English Like DSL
+
+class People
+  include ActiveEnumerable
+  
+  scope :unpaid, -> { where(paid: false).or(credit: 0) }
+end
+
+people = People.new([{ name: "Reuben" }, { name: "Naomi" }])
+people.where { has(:name).of("Reuben") } }
+    #=> <#People [{ name: "Reuben" }]]
+    
+    
+people = People.new( [
+        { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
+        { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
+      ] )
+      
+people.where { has(:parents).of(age: 29, name: "Mom").or(age: 33, name: "Dad") } 
+    #=>  <#People [{ name: "Reuben", parents: [...] }, { name: "Naomi", parents: [...] }]
+    
+people.where { has(:parents).of(age: 29, name: "Mom").and(age: 33, name: "Dad")
+    #=>  <#People [{ name: "Reuben", parents: [...] }>
 ```
 
 ## Development

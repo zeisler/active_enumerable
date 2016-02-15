@@ -55,6 +55,7 @@ module ActiveEnumerable
     #
     #   <#ActiveEnumerable>.where(id: 1).or(author_id: 3)
     #
+    # @see ActiveEnumerable::Finder#is_of for all usages of conditions.
     def where(conditions=nil)
       return WhereNotChain.new(all, method(:__new_relation__)) if conditions.nil?
       enable_or create_where_relation(conditions, to_a.select do |record|

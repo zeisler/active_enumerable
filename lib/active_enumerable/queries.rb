@@ -1,6 +1,5 @@
 module ActiveEnumerable
   module Queries
-    include ActiveEnumerable::Where
 
     # Find by id - This can either be a specific id (1), a list of ids (1, 5, 6), or an array of ids ([5, 6, 10]).
     # If no record can be found for all of the listed ids, then RecordNotFound will be raised. If the primary key
@@ -12,13 +11,17 @@ module ActiveEnumerable
     #   <#ActiveEnumerable>.find([1])        # returns an array for the object with ID = 1
     #
     # <tt>ActiveEnumerable::RecordNotFound</tt> will be raised if one or more ids are not found.
-    def find(ids)
-      raise RecordNotFound.new("Couldn't find #{self.name} without an ID") if ids.nil?
-      results = [*ids].map do |id|
-        find_by!(id: id.to_i)
+    # @return [ActiveEnumerable, Object]
+    # @param [*Fixnum, Array<Fixnum>] args
+    def find(*args)
+      raise RecordNotFound.new("Couldn't find #{self.name} without an ID") if args.compact.empty?
+      if args.count > 1 || args.first.is_a?(Array)
+        __new_relation__(args.flatten.lazy.map do |id|
+          find_by!(id: id.to_i)
+        end)
+      else
+        find_by!(id: args.first.to_i)
       end
-      return __new_relation__(results) if ids.class == Array
-      results.first
     end
 
     # Updates all records with details given if they match a set of conditions supplied, limits and order can
@@ -74,6 +77,8 @@ module ActiveEnumerable
     # If no record is found, returns <tt>nil</tt>.
     #
     #   <#ActiveEnumerable>.find_by name: 'Spartacus', rating: 4
+    #
+    # # @see ActiveEnumerable::Finder#is_of for all usages of conditions.
     def find_by(conditions = {})
       to_a.detect do |record|
         Finder.new(record).is_of(conditions)

@@ -10,7 +10,7 @@ RSpec.describe ActiveEnumerable::MethodCaller do
       end
 
       it "raises an error when no method" do
-        expect{described_class.new({name: "David"}).call(:first_name)}.to raise_error(KeyError)
+        expect{described_class.new({name: "David"}).call(:first_name)}.to raise_error(KeyError, %[key not found: :first_name for {:name=>"David"}])
       end
 
       it "returns nil when no method" do
@@ -26,7 +26,7 @@ RSpec.describe ActiveEnumerable::MethodCaller do
       end
 
       it "raises an error when no method" do
-        expect{described_class.new(Person.new("David")).call(:first_name)}.to raise_error(NoMethodError)
+        expect{described_class.new(Person.new("David")).call(:first_name)}.to raise_error(NoMethodError, %[undefined method `first_name' for #<struct Person name="David">])
       end
 
       it "returns nil when no method" do
