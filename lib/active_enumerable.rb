@@ -8,7 +8,6 @@ require "active_enumerable/method_caller"
 require "active_enumerable/scope_method"
 require "active_enumerable/scopes"
 require "active_enumerable/where"
-require "active_enumerable/find"
 require "active_enumerable/queries"
 require "active_enumerable/english_dsl"
 
