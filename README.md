@@ -39,7 +39,7 @@ customers = Customers.new([{paid: true, credit: 1000}, {paid: false, credit: 200
 customers.unpaid
   # => <#Customers [{:paid=>false, :credit=>2000}, {:paid=>false, :credit=>0}]]>
   
-customers.scope { select { |y| y > 1000 } }
+customers.scope { select { |y| y >= 1000 } }
   #=> <#Customers [{paid: true, credit: 1000}, {paid: false, credit: 2000}]>
   
 customers.sum(:credit)
