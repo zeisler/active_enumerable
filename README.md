@@ -88,6 +88,8 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
+This is a community project and commit access will be granted to those who show interest by having a history of acceptable pull-requests.
+
 Bug reports and pull requests are welcome on GitHub at https://github.com/zeisler/active_enumerable. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
 
 
