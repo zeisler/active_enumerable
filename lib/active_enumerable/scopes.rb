@@ -9,12 +9,8 @@ module ActiveEnumerable
       end
     end
 
-    def respond_to_missing?(meth, include_private = false)
-      if create_scope_method(meth)
-        true
-      else
-        super
-      end
+    def respond_to_missing?(meth, _include_private = false)
+      create_scope_method(meth)
     end
 
     def create_scope_method(meth)

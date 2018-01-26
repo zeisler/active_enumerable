@@ -1,3 +1,5 @@
+require "active_enumerable/finder"
+
 module ActiveEnumerable
   module Where
     class WhereNotChain

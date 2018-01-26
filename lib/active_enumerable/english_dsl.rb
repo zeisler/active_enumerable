@@ -3,6 +3,8 @@ module ActiveEnumerable
     include ScopeMethod
     include Where
 
+    UnmetCondition = Class.new(StandardError)
+
     # @param [Hash]
     # @yield takes block to evaluate English Dsl
     #   <ActiveEnumerable>#where{ has(:name).of("Dustin") }
@@ -26,7 +28,7 @@ module ActiveEnumerable
     #   Or this can by any value to compare the result from attr.
     def of(matches)
       if all_conditions.empty? || !(all_conditions.last.count == 1)
-        raise ".has(attr) must be call before calling #of."
+        raise UnmetCondition, ".has(attr) must be call before calling #of."
       else
         all_conditions.last << matches
         self
@@ -37,7 +39,7 @@ module ActiveEnumerable
     # @param [Hash, Object] matches is list of sub conditions or associations to query.
     #   Or this can by any value to compare the result from attr.
     def or(matches)
-      raise ".has(attr).of(matches) must be call before calling #or(matches)." if all_conditions.empty? || !(all_conditions.last.count == 2)
+      raise UnmetCondition, ".has(attr).of(matches) must be call before calling #or(matches)." if all_conditions.empty? || !(all_conditions.last.count == 2)
       evaluation_results << english_where
       all_conditions.last[1] = matches
       evaluation_results << english_where

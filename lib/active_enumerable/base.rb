@@ -1,6 +1,16 @@
 module ActiveEnumerable
   module Base
+    include ::Enumerable
+
+    def each(*args, &block)
+      @collection.send(:each, *args, &block)
+    end
+
     def initialize(collection=[])
+      active_enumerable_setup(collection)
+    end
+
+    def active_enumerable_setup(collection=[])
       if collection.is_a? ::Enumerator::Lazy
         @collection = collection
       else
@@ -12,22 +22,11 @@ module ActiveEnumerable
       @collection.to_a
     end
 
-    # @private
-    def __new_relation__(collection)
-      self.class.new(collection)
-    end
-
-    def create(attributes)
-      add(if (klass = self.class.item_class)
-            klass.new(attributes)
-          else
-            attributes
-          end)
-    end
-
-    def add(item)
+    def <<(item)
       @collection << item
     end
+
+    alias_method :add, :<<
 
     def all
       self.tap { to_a }
@@ -37,18 +36,9 @@ module ActiveEnumerable
       self.class.name
     end
 
-    module ClassMethods
-      def item_class
-        @item_class
-      end
-
-      def item_class=(klass)
-        @item_class = klass
-      end
-    end
-
-    def self.included(base)
-      base.extend(ClassMethods)
+    # @private
+    def __new_relation__(collection)
+      self.class.new(collection)
     end
   end
 end

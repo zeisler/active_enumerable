@@ -1,7 +1,10 @@
+require "active_enumerable/order"
+require "bigdecimal"
+
 module ActiveEnumerable
   module Queries
-
-    # Find by id - This can either be a specific id (1), a list of ids (1, 5, 6), or an array of ids ([5, 6, 10]).
+    # Find by id - Depends on either having an Object#id or Hash{id: Integer}
+    # This can either be a specific id (1), a list of ids (1, 5, 6), or an array of ids ([5, 6, 10]).
     # If no record can be found for all of the listed ids, then RecordNotFound will be raised. If the primary key
     # is an integer, find by id coerces its arguments using +to_i+.
     #
@@ -14,59 +17,13 @@ module ActiveEnumerable
     # @return [ActiveEnumerable, Object]
     # @param [*Fixnum, Array<Fixnum>] args
     def find(*args)
-      raise RecordNotFound.new("Couldn't find #{self.name} without an ID") if args.compact.empty?
+      raise RecordNotFound.new("Couldn't find #{self.respond_to?(:name) ? self.name : self.class.name} without an ID") if args.compact.empty?
       if args.count > 1 || args.first.is_a?(Array)
         __new_relation__(args.flatten.lazy.map do |id|
           find_by!(id: id.to_i)
         end)
       else
         find_by!(id: args.first.to_i)
-      end
-    end
-
-    # Updates all records with details given if they match a set of conditions supplied, limits and order can
-    # also be supplied.
-    #
-    # ==== Parameters
-    #
-    # * +updates+ - A string, array, or hash.
-    #
-    # ==== Examples
-    #
-    #   # Update all customers with the given attributes
-    #   <#ActiveEnumerable>.update_all wants_email: true
-    #
-    #   # Update all books with 'Rails' in their title
-    #   <#ActiveEnumerable>.where(title: 'Rails').update_all(author: 'David')
-    #
-    #   # Update all books that match conditions, but limit it to 5 ordered by date
-    #   <#ActiveEnumerable>.where(title: 'Rails').order(:created_at).limit(5).update_all(author: 'David')
-    def update_all(attributes)
-      all.each { |i| i.update(attributes) }
-    end
-
-    # Updates an object (or multiple objects) and saves it.
-    #
-    # ==== Parameters
-    #
-    # * +id+ - This should be the id or an array of ids to be updated.
-    # * +attributes+ - This should be a hash of attributes or an array of hashes.
-    #
-    # ==== Examples
-    #
-    #   # Updates one record
-    #   <#ActiveEnumerable>.update(15, user_name: 'Samuel', group: 'expert')
-    #
-    #   # Updates multiple records
-    #   people = { 1 => { "first_name" => "David" }, 2 => { "first_name" => "Jeremy" } }
-    #   <#ActiveEnumerable>.update(people.keys, people.values)
-    def update(id, attributes)
-      if id.is_a?(Array)
-        id.map.with_index { |one_id, idx| update(one_id, attributes[idx]) }
-      else
-        object = find(id)
-        object.update(attributes)
-        object
       end
     end
 
@@ -95,39 +52,6 @@ module ActiveEnumerable
       result
     end
 
-    # Finds the first record with the given attributes, or creates a record
-    # with the attributes if one is not found:
-    #
-    #   # Find the first user named "Penélope" or create a new one.
-    #   <#ActiveEnumerable>.find_or_create_by(first_name: 'Penélope')
-    #   # => #<User id: 1, first_name: "Penélope", last_name: nil>
-    #
-    #   # Find the first user named "Penélope" or create a new one.
-    #   # We already have one so the existing record will be returned.
-    #   <#ActiveEnumerable>.find_or_create_by(first_name: 'Penélope')
-    #   # => #<User id: 1, first_name: "Penélope", last_name: nil>
-    #
-    # This method accepts a block, which is passed down to +create+. The last example
-    # above can be alternatively written this way:
-    #
-    #   # Find the first user named "Scarlett" or create a new one with a
-    #   # different last name.
-    #   <#ActiveEnumerable>.find_or_create_by(first_name: 'Scarlett') do |user|
-    #     user.last_name = 'Johansson'
-    #   end
-    #   # => #<User id: 2, first_name: "Scarlett", last_name: "Johansson">
-    #
-    def find_or_create_by(attributes, &block)
-      find_by(attributes) || create(attributes, &block)
-    end
-
-    alias_method :find_or_create_by!, :find_or_create_by
-
-    # Like <tt>find_or_create_by</tt>, but calls <tt>new</tt> instead of <tt>create</tt>.
-    def find_or_initialize_by(attributes, &block)
-      find_by(attributes) || new(attributes, &block)
-    end
-
     # Count the records.
     #
     #   <#ActiveEnumerable>.count
@@ -136,17 +60,15 @@ module ActiveEnumerable
     #   <#ActiveEnumerable>.count(:age)
     #   # => returns the total count of all people whose age is not nil
     def count(name = nil)
-      return all.size if name.nil?
-      where.not(name => nil).size
+      return to_a.size if name.nil?
+      to_a.reject { |record| Finder.new(record).is_of(name: nil) }.size
     end
 
     # Specifies a limit for the number of records to retrieve.
     #
     #   <#ActiveEnumerable>.limit(10)
     def limit(num)
-      relation = __new_relation__(all.take(num))
-      relation.send(:set_from_limit)
-      relation
+      __new_relation__(all.take(num))
     end
 
     # Calculates the sum of values on a given attribute. The value is returned
@@ -167,11 +89,12 @@ module ActiveEnumerable
     def average(key)
       values = values_by_key(key)
       total  = values.inject { |sum, n| sum + n }
+      return unless total
       BigDecimal.new(total) / BigDecimal.new(values.count)
     end
 
-    # Calculates the minimum value on a given attribute. The value is returned
-    # with the same data type of the attribute, or +nil+ if there's no row.
+    # Calculates the minimum value on a given attribute. Returns +nil+ if there's
+    # no row.
     #
     #   <#ActiveEnumerable>.minimum(:age) # => 7
     def minimum(key)
@@ -191,9 +114,14 @@ module ActiveEnumerable
     #   <#ActiveEnumerable>.order('name')
     #
     #   <#ActiveEnumerable>.order(:name)
-    def order(key)
-      __new_relation__(all.sort_by { |item| MethodCaller.new(item).call(key) })
+    #
+    #   <#ActiveEnumerable>.order(email: :desc)
+    #
+    #   <#ActiveEnumerable>.order(:name, email: :desc)
+    def order(*args)
+      __new_relation__(Order.call(args, all))
     end
+
 
     # Reverse the existing order clause on the relation.
     #
@@ -233,7 +161,7 @@ module ActiveEnumerable
     private
 
     def values_by_key(key)
-      all.map { |obj| obj.send(key) }
+      all.map { |obj| MethodCaller.new(obj).call(key)  }
     end
   end
 end

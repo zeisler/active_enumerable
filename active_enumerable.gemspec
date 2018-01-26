@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Dustin Zeisler"]
   spec.email         = ["dustin@zeisler.net"]
 
-  spec.summary       = %q{Gives ActiveRecord like querying methods to ruby enumerable objects.}
-  spec.description   = %q{Gives ActiveRecord like querying methods to ruby enumerable objects.}
+  spec.summary       = %q{Provides ActiveRecord like query methods for use in Ruby Enumerable collections.}
+  spec.description   = %q{Provides ActiveRecord like query methods for use in Ruby Enumerable collections. Use Hashes or custom Ruby Objects to represent records.}
   spec.homepage      = "https://github.com/zeisler/active_enumerable"
   spec.license       = "MIT"
 
@@ -24,4 +24,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.4"
+  spec.add_development_dependency "simplecov", "~> 0.15.1"
 end

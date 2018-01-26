@@ -3,7 +3,8 @@
 [![Build Status](https://travis-ci.org/zeisler/active_enumerable.svg?branch=master)](https://travis-ci.org/zeisler/active_enumerable)
 [![Gem Version](https://badge.fury.io/rb/active_enumerable.svg)](https://badge.fury.io/rb/active_enumerable)
 
-Include ActiveRecord like query methods to Ruby enumerable collections.
+Provides ActiveRecord like query methods for use in Ruby Enumerable collections.
+Use Hashes or custom Ruby Objects to represent records. 
 
 ## Installation
 
@@ -30,33 +31,39 @@ require "active_enumerable"
 
 class Customers
   include ActiveEnumerable
-  
+
   scope :unpaid, -> { where(paid: false).or(credit: 0) }
 end
 
 customers = Customers.new([{paid: true, credit: 1000}, {paid: false, credit: 2000}, {paid: false, credit: 0}])
 
 customers.unpaid
-  # => <#Customers [{:paid=>false, :credit=>2000}, {:paid=>false, :credit=>0}]]>
-  
-customers.scope { select { |y| y >= 1000 } }
-  #=> <#Customers [{paid: true, credit: 1000}, {paid: false, credit: 2000}]>
-  
+# => <#Customers [{:paid=>false, :credit=>2000}, {:paid=>false, :credit=>0}]]>
+
+customers.scope { select { |y| y[:credit] >= 1000 } }
+#=> <#Customers [{paid: true, credit: 1000}, {paid: false, credit: 2000}]>
+
 customers.sum(:credit)
-  #=> 3000
-  
-customers.create({paid: true, credit: 1500}) # defaults to Hash creations
+#=> 3000
 
-Customers.item_class = Customer
+customers << { paid: true, credit: 1500 } # accepts Hashes
 
-customers.create({paid: true, credit: 1500}).to_a.last
-  #=> <#Customer paid: true, credit: 1500>
- 
+class Customer
+  attr_reader :paid, :credit
+  def initialize(paid:, credit:)
+    @paid  = paid
+    @credit = credit
+  end
+end
+
+customers << Customer.new(paid: true, credit: 1500) # Or Objects
 ```
 
 ### English Like DSL
 
 ```ruby
+require "active_enumerable"
+
 class People
   include ActiveEnumerable
   
@@ -64,7 +71,7 @@ class People
 end
 
 people = People.new([{ name: "Reuben" }, { name: "Naomi" }])
-people.where { has(:name).of("Reuben") } }
+people.where { has(:name).of("Reuben") }
     #=> <#People [{ name: "Reuben" }]]
     
     
@@ -75,9 +82,6 @@ people = People.new( [
       
 people.where { has(:parents).of(age: 29, name: "Mom").or(age: 33, name: "Dad") } 
     #=>  <#People [{ name: "Reuben", parents: [...] }, { name: "Naomi", parents: [...] }]
-    
-people.where { has(:parents).of(age: 29, name: "Mom").and(age: 33, name: "Dad")
-    #=>  <#People [{ name: "Reuben", parents: [...] }>
 ```
 
 ## Development

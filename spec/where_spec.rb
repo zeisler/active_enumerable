@@ -4,7 +4,6 @@ require "ostruct"
 RSpec.describe ActiveEnumerable::Where do
   class TestEnumerable
     include ActiveEnumerable::Base
-    include ActiveEnumerable::Enumerable
     include ActiveEnumerable::Where
   end
 

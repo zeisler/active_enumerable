@@ -5,11 +5,14 @@ RSpec.describe ActiveEnumerable::Base do
 
   class BaseTestActiveEnumerable
     include ActiveEnumerable::Base
+    def initialize(collection=[])
+      active_enumerable_setup(collection)
+    end
   end
 
   describe "initialize" do
     it "raise an error if type not array" do
-      expect { BaseTestActiveEnumerable.new(1) }.to raise_error(NoMethodError, "undefined method `to_a' for 1:Fixnum")
+      expect { BaseTestActiveEnumerable.new(1) }.to raise_error(NoMethodError)
     end
   end
 
@@ -26,29 +29,16 @@ RSpec.describe ActiveEnumerable::Base do
     end
   end
 
-  describe "#create" do
-    it "by default is creates a new hash from passed attributes and adds to collection" do
-      subject = BaseTestActiveEnumerable.new
-      subject.create(name: "Jane", age: 23)
-      expect(subject.to_a).to eq [{ :name => "Jane", :age => 23 }]
-    end
-
-    context "override hash item type" do
-      after { BaseTestActiveEnumerable.item_class = nil }
-
-      it "with item type of OpenStruct" do
-        BaseTestActiveEnumerable.item_class = OpenStruct
-        subject            = BaseTestActiveEnumerable.new
-        subject.create(name: "Jane", age: 23)
-        expect(subject.to_a).to eq [OpenStruct.new(:name => "Jane", :age => 23)]
-      end
-    end
-  end
-
   describe "#add" do
     it "adds an item to the collection" do
       subject = BaseTestActiveEnumerable.new
       subject.add(name: "Naomi", age: 4)
+      expect(subject.to_a).to eq [{ name: "Naomi", age: 4 }]
+    end
+
+    it "works the same as :<<" do
+      subject = BaseTestActiveEnumerable.new
+      subject << { name: "Naomi", age: 4 }
       expect(subject.to_a).to eq [{ name: "Naomi", age: 4 }]
     end
   end
