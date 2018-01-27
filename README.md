@@ -24,6 +24,8 @@ Or install it yourself as:
 
 ## Usage
 
+[Documentation](http://www.rubydoc.info/gems/active_enumerable/1.0.0)
+
 ### ActiveRecord Like Querying
 
 ```ruby
