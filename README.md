@@ -50,6 +50,9 @@ customers.sum(:credit)
 
 customers << { paid: true, credit: 1500 } # accepts Hashes
 
+customers.where{ paid && credit == 1000 }
+# => <#Customers [{paid: true, credit: 1000}]
+
 class Customer
   attr_reader :paid, :credit
   def initialize(paid:, credit:)

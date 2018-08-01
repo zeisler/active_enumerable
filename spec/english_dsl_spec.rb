@@ -23,8 +23,8 @@ RSpec.describe ActiveEnumerable::EnglishDsl do
 
     context "has(attr).of(matches)" do
       let(:records) { [
-        { name: "Reuben", parents: [{ name: "Mom", age: 26 }, { name: "Dad", age: 33 }] },
-        { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] }
+          { name: "Reuben", parents: [{ name: "Mom", age: 26 }, { name: "Dad", age: 33 }] },
+          { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] }
       ] }
       let(:result) { subject.where { has(:parents).of(age: 29) } }
       it { expect(result).to be_an_instance_of TestEnglishDsl }
@@ -37,12 +37,12 @@ RSpec.describe ActiveEnumerable::EnglishDsl do
 
     context "has(attr).of(matches).or(matches)" do
       let(:records) { [
-        { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
-        { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
+          { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
+          { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
       ] }
       let(:result) { subject.where { has(:parents).of(age: 29, name: "Mom").or(age: 33, name: "Dad") } }
       it { expect(result).to be_an_instance_of TestEnglishDsl }
-      it { expect(result.to_a).to eq records}
+      it { expect(result.to_a).to eq records }
 
       context "calling in wrong order" do
         it { expect { subject.where { self.or(age: 29) } }.to raise_error(described_class::UnmetCondition, ".has(attr).of(matches) must be call before calling #or(matches).") }
@@ -51,18 +51,28 @@ RSpec.describe ActiveEnumerable::EnglishDsl do
 
     context "has(attr).of(matches).and(matches)" do
       let(:records) { [
-        { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
-        { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
+          { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
+          { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
       ] }
       let(:result) { subject.where { has(:parents).of(age: 29, name: "Mom").and(age: 33, name: "Dad") } }
       it { expect(result).to be_an_instance_of TestEnglishDsl }
       it { expect(result.to_a).to eq [records.first] }
+
+      context "of(&block)" do
+        let(:records) { [
+            { name: "Reuben", parents: [{ name: "Mom", age: 30 }, { name: "Dad", age: 33 }] },
+            { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
+        ] }
+        let(:result) { subject.where { has(:parents).of { age > 29 } } }
+        it { expect(result).to be_an_instance_of TestEnglishDsl }
+        it { expect(result.to_a).to eq [records.first] }
+      end
     end
 
     context "has(attr).of(matches).and.of(matches)" do
       let(:records) { [
-        { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
-        { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
+          { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
+          { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
       ] }
       let(:result) { subject.where { has(:parents).of(age: 29, name: "Mom").and.has(:name).of("Naomi") } }
       it { expect(result).to be_an_instance_of TestEnglishDsl }
@@ -71,8 +81,8 @@ RSpec.describe ActiveEnumerable::EnglishDsl do
 
     context "#where still works" do
       let(:records) { [
-        { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
-        { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
+          { name: "Reuben", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 33 }] },
+          { name: "Naomi", parents: [{ name: "Mom", age: 29 }, { name: "Dad", age: 41 }] }
       ] }
       let(:result) { subject.where(name: "Reuben") }
       it { expect(result).to be_an_instance_of TestEnglishDsl }

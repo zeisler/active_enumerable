@@ -38,11 +38,14 @@ module ActiveEnumerable
     #
     # @param [Hash] conditions
     # @return [true, false]
-    def is_of(conditions={})
+    def is_of(conditions = {})
       conditions.all? do |col, match|
-        if match.is_a? Hash
+        case match
+        when Proc
+          proc_match(col, match)
+        when Hash
           hash_match(col, match)
-        elsif match.is_a? Array
+        when Array
           array_match(col, match)
         else
           compare(col, match)
@@ -51,6 +54,16 @@ module ActiveEnumerable
     end
 
     private
+
+    def proc_match(col, match)
+      return @method_caller.instance_exec(&match) unless col
+      next_record = @method_caller.call(col)
+      if next_record.is_a? Array
+        next_record.all? { |record| Finder.new(record).is_of({nil => match}) }
+      else
+        MethodCaller.new(next_record).instance_exec(&match)
+      end
+    end
 
     def hash_match(col, match)
       next_record = @method_caller.call(col)

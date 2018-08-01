@@ -26,11 +26,12 @@ module ActiveEnumerable
 
     # @param [Hash, Object] matches is list of sub conditions or associations to query.
     #   Or this can by any value to compare the result from attr.
-    def of(matches)
+    def of(matches=nil, &block)
+      raise ArgumentError if matches.nil? && block.nil?
       if all_conditions.empty? || !(all_conditions.last.count == 1)
         raise UnmetCondition, ".has(attr) must be call before calling #of."
       else
-        all_conditions.last << matches
+        all_conditions.last << (matches || block)
         self
       end
     end

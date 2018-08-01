@@ -69,6 +69,19 @@ RSpec.describe ActiveEnumerable::Where do
       subject = TestEnumerable.new(items)
       expect(subject.where(account: { balance: 200 }).to_a).to eq items
     end
+
+    context "#where(&block)" do
+      it "evaluations in context of records" do
+        subject = TestEnumerable.new(item_hashes)
+        expect(subject.where { %w(Sam Dave).include?(name) }.to_a).to eq [item_hashes[1], item_hashes[2]]
+      end
+
+      it "nested objects" do
+        items   = [{ name: "Richard", account: { balance: 200 } }]
+        subject = TestEnumerable.new(items)
+        expect(subject.where { account.balance == 200 }.to_a).to eq items
+        expect(subject.where { account.balance == 1 }.to_a).to eq []
+      end
+    end
   end
 end
-

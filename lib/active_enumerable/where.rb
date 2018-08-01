@@ -37,10 +37,11 @@ module ActiveEnumerable
     #   <#ActiveEnumerable>.where(id: 1).or(author_id: 3)
     #
     # @see ActiveEnumerable::Finder#is_of for all usages of conditions.
-    def where(conditions=nil)
-      return WhereNotChain.new(all, method(:__new_relation__)) unless conditions
+    def where(conditions = nil, &block)
+      return WhereNotChain.new(all, method(:__new_relation__)) unless conditions || block
+      conditions = conditions || { nil => block }
       create_where_relation(conditions, to_a.select do |record|
-        Finder.new(record).is_of(conditions)
+        Finder.new(record).is_of(conditions || { nil => block })
       end).tap do |where|
         where.extend(WhereOrChain)
         where.original_collection = to_a
