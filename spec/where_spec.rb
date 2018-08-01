@@ -5,6 +5,10 @@ RSpec.describe ActiveEnumerable::Where do
   class TestEnumerable
     include ActiveEnumerable::Base
     include ActiveEnumerable::Where
+
+    def custom_method
+      :i_am_here!
+    end
   end
 
   let(:item_objects) { [OpenStruct.new(name: "Fred"), OpenStruct.new(name: "Dave")] }
@@ -20,8 +24,14 @@ RSpec.describe ActiveEnumerable::Where do
       expect(TestEnumerable.new(item_hashes).where(name: "Fred").to_a).to eq [item_hashes.first]
     end
 
-    it "#not" do
-      expect(TestEnumerable.new(item_hashes).where.not(name: "Fred").to_a).to eq [item_hashes[1], item_hashes[2]]
+    context "#not" do
+      it "returns results not matching conditions" do
+        expect(TestEnumerable.new(item_hashes).where.not(name: "Fred").to_a).to eq [item_hashes[1], item_hashes[2]]
+      end
+
+      it "results is still of original type" do
+        expect(TestEnumerable.new(item_hashes).where.not(name: "Fred").custom_method).to eq :i_am_here!
+      end
     end
 
     context "#or(conditions)" do
@@ -29,19 +39,23 @@ RSpec.describe ActiveEnumerable::Where do
         test_enum = TestEnumerable.new([{ paid: true, credit: 1000 }, { paid: false, credit: 2000 }, { paid: false, credit: 0 }])
         result    = test_enum.where(paid: false).or(credit: 0)
         expect(result.to_a).
-          to eq [{ :paid => false, :credit => 2000 }, { :paid => false, :credit => 0 }]
+            to eq [{ :paid => false, :credit => 2000 }, { :paid => false, :credit => 0 }]
       end
 
       it "with a where.not" do
         expect(TestEnumerable.new(item_hashes).where(name: "Dave").or(name: "Fred").where.not(name: "Sam").to_a).
-          to eq [item_hashes[2], item_hashes[0]]
+            to eq [item_hashes[2], item_hashes[0]]
+      end
+
+      it "results is still of original type" do
+        expect(TestEnumerable.new(item_hashes).where(name: "Dave").or(name: "Fred").where.not(name: "Sam").custom_method).to eq :i_am_here!
       end
     end
 
     it "#or(<#ActiveEnumerable>)" do
       subject = TestEnumerable.new(item_hashes)
       expect(subject.where(name: "Dave").or(subject.where(name: "Fred")).where.not(name: "Sam").to_a).
-        to eq [item_hashes[2], item_hashes[0]]
+          to eq [item_hashes[2], item_hashes[0]]
     end
 
     it "nested with array" do
