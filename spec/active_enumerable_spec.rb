@@ -2,7 +2,6 @@ require 'spec_helper'
 
 describe ActiveEnumerable do
   it 'has a version number' do
-    load "active_enumerable/version.rb"
     expect(ActiveEnumerable::VERSION).to match(/d*\.\d*\.\d*/)
   end
 
